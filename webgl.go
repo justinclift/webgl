@@ -6,8 +6,7 @@ package webgl
 
 import (
 	"errors"
-
-	"github.com/gopherjs/gopherjs/js"
+	"syscall/js"
 )
 
 type ContextAttributes struct {
@@ -43,7 +42,7 @@ func DefaultAttributes() *ContextAttributes {
 }
 
 type Context struct {
-	*js.Object
+	Object                                       js.Value
 	ARRAY_BUFFER                                 int `js:"ARRAY_BUFFER"`
 	ARRAY_BUFFER_BINDING                         int `js:"ARRAY_BUFFER_BINDING"`
 	ATTACHED_SHADERS                             int `js:"ATTACHED_SHADERS"`
@@ -340,11 +339,7 @@ type Context struct {
 // NewContext takes an HTML5 canvas object and optional context attributes.
 // If an error is returned it means you won't have access to WebGL
 // functionality.
-func NewContext(canvas *js.Object, ca *ContextAttributes) (*Context, error) {
-	if js.Global.Get("WebGLRenderingContext") == js.Undefined {
-		return nil, errors.New("Your browser doesn't appear to support webgl.")
-	}
-
+func NewContext(canvas *js.Value, ca *ContextAttributes) (*Context, error) {
 	if ca == nil {
 		ca = DefaultAttributes()
 	}
@@ -358,10 +353,10 @@ func NewContext(canvas *js.Object, ca *ContextAttributes) (*Context, error) {
 		"preserveDrawingBuffer": ca.PreserveDrawingBuffer,
 	}
 	gl := canvas.Call("getContext", "webgl", attrs)
-	if gl == nil {
+	if gl == js.Undefined() {
 		gl = canvas.Call("getContext", "experimental-webgl", attrs)
-		if gl == nil {
-			return nil, errors.New("Creating a webgl context has failed.")
+		if gl == js.Undefined() {
+			return nil, errors.New("creating a webgl context has failed")
 		}
 	}
 	ctx := new(Context)
@@ -373,7 +368,7 @@ func NewContext(canvas *js.Object, ca *ContextAttributes) (*Context, error) {
 // be different than what was requested on context creation if the
 // browser's implementation doesn't support a feature.
 func (c *Context) GetContextAttributes() ContextAttributes {
-	ca := c.Call("getContextAttributes")
+	ca := c.Object.Call("getContextAttributes")
 	return ContextAttributes{
 		ca.Get("alpha").Bool(),
 		ca.Get("depth").Bool(),
@@ -386,383 +381,398 @@ func (c *Context) GetContextAttributes() ContextAttributes {
 
 // Specifies the active texture unit.
 func (c *Context) ActiveTexture(texture int) {
-	c.Call("activeTexture", texture)
+	c.Object.Call("activeTexture", texture)
 }
 
 // Attaches a WebGLShader object to a WebGLProgram object.
-func (c *Context) AttachShader(program *js.Object, shader *js.Object) {
-	c.Call("attachShader", program, shader)
+func (c *Context) AttachShader(program *js.Value, shader *js.Value) {
+	c.Object.Call("attachShader", program, shader)
 }
 
 // Binds a generic vertex index to a user-defined attribute variable.
-func (c *Context) BindAttribLocation(program *js.Object, index int, name string) {
-	c.Call("bindAttribLocation", program, index, name)
+func (c *Context) BindAttribLocation(program *js.Value, index int, name string) {
+	c.Object.Call("bindAttribLocation", program, index, name)
 }
 
 // Associates a buffer with a buffer target.
-func (c *Context) BindBuffer(target int, buffer *js.Object) {
-	c.Call("bindBuffer", target, buffer)
+func (c *Context) BindBuffer(target int, buffer *js.Value) {
+	c.Object.Call("bindBuffer", target, buffer)
 }
 
 // Associates a WebGLFramebuffer object with the FRAMEBUFFER bind target.
-func (c *Context) BindFramebuffer(target int, framebuffer *js.Object) {
-	c.Call("bindFramebuffer", target, framebuffer)
+func (c *Context) BindFramebuffer(target int, framebuffer *js.Value) {
+	c.Object.Call("bindFramebuffer", target, framebuffer)
 }
 
 // Binds a WebGLRenderbuffer object to be used for rendering.
-func (c *Context) BindRenderbuffer(target int, renderbuffer *js.Object) {
-	c.Call("bindRenderbuffer", target, renderbuffer)
+func (c *Context) BindRenderbuffer(target int, renderbuffer *js.Value) {
+	c.Object.Call("bindRenderbuffer", target, renderbuffer)
 }
 
 // Binds a named texture object to a target.
-func (c *Context) BindTexture(target int, texture *js.Object) {
-	c.Call("bindTexture", target, texture)
+func (c *Context) BindTexture(target int, texture *js.Value) {
+	c.Object.Call("bindTexture", target, texture)
 }
 
 // The GL_BLEND_COLOR may be used to calculate the source and destination blending factors.
 func (c *Context) BlendColor(r, g, b, a float64) {
-	c.Call("blendColor", r, g, b, a)
+	c.Object.Call("blendColor", r, g, b, a)
 }
 
 // Sets the equation used to blend RGB and Alpha values of an incoming source
 // fragment with a destination values as stored in the fragment's frame buffer.
 func (c *Context) BlendEquation(mode int) {
-	c.Call("blendEquation", mode)
+	c.Object.Call("blendEquation", mode)
 }
 
 // Controls the blending of an incoming source fragment's R, G, B, and A values
 // with a destination R, G, B, and A values as stored in the fragment's WebGLFramebuffer.
 func (c *Context) BlendEquationSeparate(modeRGB, modeAlpha int) {
-	c.Call("blendEquationSeparate", modeRGB, modeAlpha)
+	c.Object.Call("blendEquationSeparate", modeRGB, modeAlpha)
 }
 
 // Sets the blending factors used to combine source and destination pixels.
 func (c *Context) BlendFunc(sfactor, dfactor int) {
-	c.Call("blendFunc", sfactor, dfactor)
+	c.Object.Call("blendFunc", sfactor, dfactor)
 }
 
 // Sets the weighting factors that are used by blendEquationSeparate.
 func (c *Context) BlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha int) {
-	c.Call("blendFuncSeparate", srcRGB, dstRGB, srcAlpha, dstAlpha)
+	c.Object.Call("blendFuncSeparate", srcRGB, dstRGB, srcAlpha, dstAlpha)
 }
 
 // Creates a buffer in memory and initializes it with array data.
 // If no array is provided, the contents of the buffer is initialized to 0.
 func (c *Context) BufferData(target int, data interface{}, usage int) {
-	c.Call("bufferData", target, data, usage)
+	c.Object.Call("bufferData", target, data, usage)
 }
 
 // Used to modify or update some or all of a data store for a bound buffer object.
 func (c *Context) BufferSubData(target int, offset int, data interface{}) {
-	c.Call("bufferSubData", target, offset, data)
+	c.Object.Call("bufferSubData", target, offset, data)
 }
 
 // Returns whether the currently bound WebGLFramebuffer is complete.
 // If not complete, returns the reason why.
 func (c *Context) CheckFramebufferStatus(target int) int {
-	return c.Call("checkFramebufferStatus", target).Int()
+	return c.Object.Call("checkFramebufferStatus", target).Int()
 }
 
 // Sets all pixels in a specific buffer to the same value.
 func (c *Context) Clear(flags int) {
-	c.Call("clear", flags)
+	c.Object.Call("clear", flags)
 }
 
 // Specifies color values to use by the clear method to clear the color buffer.
 func (c *Context) ClearColor(r, g, b, a float32) {
-	c.Call("clearColor", r, g, b, a)
+	c.Object.Call("clearColor", r, g, b, a)
 }
 
 // Clears the depth buffer to a specific value.
 func (c *Context) ClearDepth(depth float64) {
-	c.Call("clearDepth", depth)
+	c.Object.Call("clearDepth", depth)
 }
 
 func (c *Context) ClearStencil(s int) {
-	c.Call("clearStencil", s)
+	c.Object.Call("clearStencil", s)
 }
 
 // Lets you set whether individual colors can be written when
 // drawing or rendering to a framebuffer.
 func (c *Context) ColorMask(r, g, b, a bool) {
-	c.Call("colorMask", r, g, b, a)
+	c.Object.Call("colorMask", r, g, b, a)
 }
 
 // Compiles the GLSL shader source into binary data used by the WebGLProgram object.
-func (c *Context) CompileShader(shader *js.Object) {
-	c.Call("compileShader", shader)
+func (c *Context) CompileShader(shader *js.Value) {
+	c.Object.Call("compileShader", shader)
 }
 
 // Copies a rectangle of pixels from the current WebGLFramebuffer into a texture image.
 func (c *Context) CopyTexImage2D(target, level, internal, x, y, w, h, border int) {
-	c.Call("copyTexImage2D", target, level, internal, x, y, w, h, border)
+	c.Object.Call("copyTexImage2D", target, level, internal, x, y, w, h, border)
 }
 
 // Replaces a portion of an existing 2D texture image with data from the current framebuffer.
 func (c *Context) CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, w, h int) {
-	c.Call("copyTexSubImage2D", target, level, xoffset, yoffset, x, y, w, h)
+	c.Object.Call("copyTexSubImage2D", target, level, xoffset, yoffset, x, y, w, h)
 }
 
 // Creates and initializes a WebGLBuffer.
-func (c *Context) CreateBuffer() *js.Object {
-	return c.Call("createBuffer")
+func (c *Context) CreateBuffer() *js.Value {
+	z := c.Object.Call("createBuffer")
+	return &z
 }
 
 // Returns a WebGLFramebuffer object.
-func (c *Context) CreateFramebuffer() *js.Object {
-	return c.Call("createFramebuffer")
+func (c *Context) CreateFramebuffer() *js.Value {
+	z := c.Object.Call("createFramebuffer")
+	return &z
 }
 
 // Creates an empty WebGLProgram object to which vector and fragment
 // WebGLShader objects can be bound.
-func (c *Context) CreateProgram() *js.Object {
-	return c.Call("createProgram")
+func (c *Context) CreateProgram() *js.Value {
+	z := c.Object.Call("createProgram")
+	return &z
 }
 
 // Creates and returns a WebGLRenderbuffer object.
-func (c *Context) CreateRenderbuffer() *js.Object {
-	return c.Call("createRenderbuffer")
+func (c *Context) CreateRenderbuffer() *js.Value {
+	z := c.Object.Call("createRenderbuffer")
+	return &z
 }
 
 // Returns an empty vertex or fragment shader object based on the type specified.
-func (c *Context) CreateShader(typ int) *js.Object {
-	return c.Call("createShader", typ)
+func (c *Context) CreateShader(typ int) *js.Value {
+	z := c.Object.Call("createShader", typ)
+	return &z
 }
 
 // Used to generate a WebGLTexture object to which images can be bound.
-func (c *Context) CreateTexture() *js.Object {
-	return c.Call("createTexture")
+func (c *Context) CreateTexture() *js.Value {
+	z := c.Object.Call("createTexture")
+	return &z
 }
 
 // Sets whether or not front, back, or both facing facets are able to be culled.
 func (c *Context) CullFace(mode int) {
-	c.Call("cullFace", mode)
+	c.Object.Call("cullFace", mode)
 }
 
 // Delete a specific buffer.
-func (c *Context) DeleteBuffer(buffer *js.Object) {
-	c.Call("deleteBuffer", buffer)
+func (c *Context) DeleteBuffer(buffer *js.Value) {
+	c.Object.Call("deleteBuffer", buffer)
 }
 
 // Deletes a specific WebGLFramebuffer object. If you delete the
 // currently bound framebuffer, the default framebuffer will be bound.
 // Deleting a framebuffer detaches all of its attachments.
-func (c *Context) DeleteFramebuffer(framebuffer *js.Object) {
-	c.Call("deleteFramebuffer", framebuffer)
+func (c *Context) DeleteFramebuffer(framebuffer *js.Value) {
+	c.Object.Call("deleteFramebuffer", framebuffer)
 }
 
 // Flags a specific WebGLProgram object for deletion if currently active.
 // It will be deleted when it is no longer being used.
 // Any shader objects associated with the program will be detached.
 // They will be deleted if they were already flagged for deletion.
-func (c *Context) DeleteProgram(program *js.Object) {
-	c.Call("deleteProgram", program)
+func (c *Context) DeleteProgram(program *js.Value) {
+	c.Object.Call("deleteProgram", program)
 }
 
 // Deletes the specified renderbuffer object. If the renderbuffer is
 // currently bound, it will become unbound. If the renderbuffer is
 // attached to the currently bound framebuffer, it is detached.
-func (c *Context) DeleteRenderbuffer(renderbuffer *js.Object) {
-	c.Call("deleteRenderbuffer", renderbuffer)
+func (c *Context) DeleteRenderbuffer(renderbuffer *js.Value) {
+	c.Object.Call("deleteRenderbuffer", renderbuffer)
 }
 
 // Deletes a specific shader object.
-func (c *Context) DeleteShader(shader *js.Object) {
-	c.Call("deleteShader", shader)
+func (c *Context) DeleteShader(shader *js.Value) {
+	c.Object.Call("deleteShader", shader)
 }
 
 // Deletes a specific texture object.
-func (c *Context) DeleteTexture(texture *js.Object) {
-	c.Call("deleteTexture", texture)
+func (c *Context) DeleteTexture(texture *js.Value) {
+	c.Object.Call("deleteTexture", texture)
 }
 
 // Sets a function to use to compare incoming pixel depth to the
 // current depth buffer value.
 func (c *Context) DepthFunc(fun int) {
-	c.Call("depthFunc", fun)
+	c.Object.Call("depthFunc", fun)
 }
 
 // Sets whether or not you can write to the depth buffer.
 func (c *Context) DepthMask(flag bool) {
-	c.Call("depthMask", flag)
+	c.Object.Call("depthMask", flag)
 }
 
 // Sets the depth range for normalized coordinates to canvas or viewport depth coordinates.
 func (c *Context) DepthRange(zNear, zFar float64) {
-	c.Call("depthRange", zNear, zFar)
+	c.Object.Call("depthRange", zNear, zFar)
 }
 
 // Detach a shader object from a program object.
-func (c *Context) DetachShader(program, shader *js.Object) {
-	c.Call("detachShader", program, shader)
+func (c *Context) DetachShader(program, shader *js.Value) {
+	c.Object.Call("detachShader", program, shader)
 }
 
 // Turns off specific WebGL capabilities for this context.
 func (c *Context) Disable(cap int) {
-	c.Call("disable", cap)
+	c.Object.Call("disable", cap)
 }
 
 // Turns off a vertex attribute array at a specific index position.
 func (c *Context) DisableVertexAttribArray(index int) {
-	c.Call("disableVertexAttribArray", index)
+	c.Object.Call("disableVertexAttribArray", index)
 }
 
 // Render geometric primitives from bound and enabled vertex data.
 func (c *Context) DrawArrays(mode, first, count int) {
-	c.Call("drawArrays", mode, first, count)
+	c.Object.Call("drawArrays", mode, first, count)
 }
 
 // Renders geometric primitives indexed by element array data.
 func (c *Context) DrawElements(mode, count, typ, offset int) {
-	c.Call("drawElements", mode, count, typ, offset)
+	c.Object.Call("drawElements", mode, count, typ, offset)
 }
 
 // Turns on specific WebGL capabilities for this context.
 func (c *Context) Enable(cap int) {
-	c.Call("enable", cap)
+	c.Object.Call("enable", cap)
 }
 
 // Turns on a vertex attribute at a specific index position in
 // a vertex attribute array.
 func (c *Context) EnableVertexAttribArray(index int) {
-	c.Call("enableVertexAttribArray", index)
+	c.Object.Call("enableVertexAttribArray", index)
 }
 
 func (c *Context) Finish() {
-	c.Call("finish")
+	c.Object.Call("finish")
 }
 
 func (c *Context) Flush() {
-	c.Call("flush")
+	c.Object.Call("flush")
 }
 
 // Attaches a WebGLRenderbuffer object as a logical buffer to the
 // currently bound WebGLFramebuffer object.
-func (c *Context) FrameBufferRenderBuffer(target, attachment, renderbufferTarget int, renderbuffer *js.Object) {
-	c.Call("framebufferRenderBuffer", target, attachment, renderbufferTarget, renderbuffer)
+func (c *Context) FrameBufferRenderBuffer(target, attachment, renderbufferTarget int, renderbuffer *js.Value) {
+	c.Object.Call("framebufferRenderBuffer", target, attachment, renderbufferTarget, renderbuffer)
 }
 
 // Attaches a texture to a WebGLFramebuffer object.
-func (c *Context) FramebufferTexture2D(target, attachment, textarget int, texture *js.Object, level int) {
-	c.Call("framebufferTexture2D", target, attachment, textarget, texture, level)
+func (c *Context) FramebufferTexture2D(target, attachment, textarget int, texture *js.Value, level int) {
+	c.Object.Call("framebufferTexture2D", target, attachment, textarget, texture, level)
 }
 
 // Sets whether or not polygons are considered front-facing based
 // on their winding direction.
 func (c *Context) FrontFace(mode int) {
-	c.Call("frontFace", mode)
+	c.Object.Call("frontFace", mode)
 }
 
 // Creates a set of textures for a WebGLTexture object with image
 // dimensions from the original size of the image down to a 1x1 image.
 func (c *Context) GenerateMipmap(target int) {
-	c.Call("generateMipmap", target)
+	c.Object.Call("generateMipmap", target)
 }
 
 // Returns an WebGLActiveInfo object containing the size, type, and name
 // of a vertex attribute at a specific index position in a program object.
-func (c *Context) GetActiveAttrib(program *js.Object, index int) *js.Object {
-	return c.Call("getActiveAttrib", program, index)
+func (c *Context) GetActiveAttrib(program *js.Value, index int) *js.Value {
+	z := c.Object.Call("getActiveAttrib", program, index)
+	return &z
 }
 
 // Returns an WebGLActiveInfo object containing the size, type, and name
 // of a uniform attribute at a specific index position in a program object.
-func (c *Context) GetActiveUniform(program *js.Object, index int) *js.Object {
-	return c.Call("getActiveUniform", program, index)
+func (c *Context) GetActiveUniform(program *js.Value, index int) *js.Value {
+	z := c.Object.Call("getActiveUniform", program, index)
+	return &z
 }
 
 // Returns a slice of WebGLShaders bound to a WebGLProgram.
-func (c *Context) GetAttachedShaders(program *js.Object) []*js.Object {
-	objs := c.Call("getAttachedShaders", program)
-	shaders := make([]*js.Object, objs.Length())
+func (c *Context) GetAttachedShaders(program *js.Value) []*js.Value {
+	objs := c.Object.Call("getAttachedShaders", program)
+	shaders := make([]*js.Value, objs.Length())
 	for i := 0; i < objs.Length(); i++ {
-		shaders[i] = objs.Index(i)
+		z := objs.Index(i)
+		shaders[i] = &z
 	}
 	return shaders
 }
 
 // Returns an index to the location in a program of a named attribute variable.
-func (c *Context) GetAttribLocation(program *js.Object, name string) int {
-	return c.Call("getAttribLocation", program, name).Int()
+func (c *Context) GetAttribLocation(program *js.Value, name string) int {
+	return c.Object.Call("getAttribLocation", program, name).Int()
 }
 
 // TODO: Create type specific variations.
 // Returns the type of a parameter for a given buffer.
-func (c *Context) GetBufferParameter(target, pname int) *js.Object {
-	return c.Call("getBufferParameter", target, pname)
+func (c *Context) GetBufferParameter(target, pname int) *js.Value {
+	z := c.Object.Call("getBufferParameter", target, pname)
+	return &z
 }
 
 // TODO: Create type specific variations.
 // Returns the natural type value for a constant parameter.
-func (c *Context) GetParameter(pname int) *js.Object {
-	return c.Call("getParameter", pname)
+func (c *Context) GetParameter(pname int) *js.Value {
+	z := c.Object.Call("getParameter", pname)
+	return &z
 }
 
 // Returns a value for the WebGL error flag and clears the flag.
 func (c *Context) GetError() int {
-	return c.Call("getError").Int()
+	return c.Object.Call("getError").Int()
 }
 
 // TODO: Create type specific variations.
 // Enables a passed extension, otherwise returns null.
-func (c *Context) GetExtension(name string) *js.Object {
-	return c.Call("getExtension", name)
+func (c *Context) GetExtension(name string) *js.Value {
+	z := c.Object.Call("getExtension", name)
+	return &z
 }
 
 // TODO: Create type specific variations.
 // Gets a parameter value for a given target and attachment.
-func (c *Context) GetFramebufferAttachmentParameter(target, attachment, pname int) *js.Object {
-	return c.Call("getFramebufferAttachmentParameter", target, attachment, pname)
+func (c *Context) GetFramebufferAttachmentParameter(target, attachment, pname int) *js.Value {
+	z := c.Object.Call("getFramebufferAttachmentParameter", target, attachment, pname)
+	return &z
 }
 
 // Returns the value of the program parameter that corresponds to a supplied pname
 // which is interpreted as an int.
-func (c *Context) GetProgramParameteri(program *js.Object, pname int) int {
-	return c.Call("getProgramParameter", program, pname).Int()
+func (c *Context) GetProgramParameteri(program *js.Value, pname int) int {
+	return c.Object.Call("getProgramParameter", program, pname).Int()
 }
 
 // Returns the value of the program parameter that corresponds to a supplied pname
 // which is interpreted as a bool.
-func (c *Context) GetProgramParameterb(program *js.Object, pname int) bool {
-	return c.Call("getProgramParameter", program, pname).Bool()
+func (c *Context) GetProgramParameterb(program *js.Value, pname int) bool {
+	return c.Object.Call("getProgramParameter", program, pname).Bool()
 }
 
 // Returns information about the last error that occurred during
 // the failed linking or validation of a WebGL program object.
-func (c *Context) GetProgramInfoLog(program *js.Object) string {
-	return c.Call("getProgramInfoLog", program).String()
+func (c *Context) GetProgramInfoLog(program *js.Value) string {
+	return c.Object.Call("getProgramInfoLog", program).String()
 }
 
 // TODO: Create type specific variations.
 // Returns a renderbuffer parameter from the currently bound WebGLRenderbuffer object.
-func (c *Context) GetRenderbufferParameter(target, pname int) *js.Object {
-	return c.Call("getRenderbufferParameter", target, pname)
+func (c *Context) GetRenderbufferParameter(target, pname int) *js.Value {
+	z := c.Object.Call("getRenderbufferParameter", target, pname)
+	return &z
 }
 
 // TODO: Create type specific variations.
 // Returns the value of the parameter associated with pname for a shader object.
-func (c *Context) GetShaderParameter(shader *js.Object, pname int) *js.Object {
-	return c.Call("getShaderParameter", shader, pname)
+func (c *Context) GetShaderParameter(shader *js.Value, pname int) *js.Value {
+	z := c.Object.Call("getShaderParameter", shader, pname)
+	return &z
 }
 
 // Returns the value of the parameter associated with pname for a shader object.
-func (c *Context) GetShaderParameterb(shader *js.Object, pname int) bool {
-	return c.Call("getShaderParameter", shader, pname).Bool()
+func (c *Context) GetShaderParameterb(shader *js.Value, pname int) bool {
+	return c.Object.Call("getShaderParameter", shader, pname).Bool()
 }
 
 // Returns errors which occur when compiling a shader.
-func (c *Context) GetShaderInfoLog(shader *js.Object) string {
-	return c.Call("getShaderInfoLog", shader).String()
+func (c *Context) GetShaderInfoLog(shader *js.Value) string {
+	return c.Object.Call("getShaderInfoLog", shader).String()
 }
 
 // Returns source code string associated with a shader object.
-func (c *Context) GetShaderSource(shader *js.Object) string {
-	return c.Call("getShaderSource", shader).String()
+func (c *Context) GetShaderSource(shader *js.Value) string {
+	return c.Object.Call("getShaderSource", shader).String()
 }
 
 // Returns a slice of supported extension strings.
 func (c *Context) GetSupportedExtensions() []string {
-	ext := c.Call("getSupportedExtensions")
+	ext := c.Object.Call("getSupportedExtensions")
 	extensions := make([]string, ext.Length())
 	for i := 0; i < ext.Length(); i++ {
 		extensions[i] = ext.Index(i).String()
@@ -772,123 +782,127 @@ func (c *Context) GetSupportedExtensions() []string {
 
 // TODO: Create type specific variations.
 // Returns the value for a parameter on an active texture unit.
-func (c *Context) GetTexParameter(target, pname int) *js.Object {
-	return c.Call("getTexParameter", target, pname)
+func (c *Context) GetTexParameter(target, pname int) *js.Value {
+	z := c.Object.Call("getTexParameter", target, pname)
+	return &z
 }
 
 // TODO: Create type specific variations.
 // Gets the uniform value for a specific location in a program.
-func (c *Context) GetUniform(program, location *js.Object) *js.Object {
-	return c.Call("getUniform", program, location)
+func (c *Context) GetUniform(program, location *js.Value) *js.Value {
+	z := c.Object.Call("getUniform", program, location)
+	return &z
 }
 
 // Returns a WebGLUniformLocation object for the location
 // of a uniform variable within a WebGLProgram object.
-func (c *Context) GetUniformLocation(program *js.Object, name string) *js.Object {
-	return c.Call("getUniformLocation", program, name)
+func (c *Context) GetUniformLocation(program *js.Value, name string) *js.Value {
+	z := c.Object.Call("getUniformLocation", program, name)
+	return &z
 }
 
 // TODO: Create type specific variations.
 // Returns data for a particular characteristic of a vertex
 // attribute at an index in a vertex attribute array.
-func (c *Context) GetVertexAttrib(index, pname int) *js.Object {
-	return c.Call("getVertexAttrib", index, pname)
+func (c *Context) GetVertexAttrib(index, pname int) *js.Value {
+	z := c.Object.Call("getVertexAttrib", index, pname)
+	return &z
 }
 
 // Returns the address of a specified vertex attribute.
 func (c *Context) GetVertexAttribOffset(index, pname int) int {
-	return c.Call("getVertexAttribOffset", index, pname).Int()
+	return c.Object.Call("getVertexAttribOffset", index, pname).Int()
 }
 
 // public function hint(target:GLenum, mode:GLenum) : Void;
 
 // Returns true if buffer is valid, false otherwise.
-func (c *Context) IsBuffer(buffer *js.Object) bool {
-	return c.Call("isBuffer", buffer).Bool()
+func (c *Context) IsBuffer(buffer *js.Value) bool {
+	return c.Object.Call("isBuffer", buffer).Bool()
 }
 
 // Returns whether the WebGL context has been lost.
 func (c *Context) IsContextLost() bool {
-	return c.Call("isContextLost").Bool()
+	return c.Object.Call("isContextLost").Bool()
 }
 
 // Returns true if buffer is valid, false otherwise.
-func (c *Context) IsFramebuffer(framebuffer *js.Object) bool {
-	return c.Call("isFramebuffer", framebuffer).Bool()
+func (c *Context) IsFramebuffer(framebuffer *js.Value) bool {
+	return c.Object.Call("isFramebuffer", framebuffer).Bool()
 }
 
 // Returns true if program object is valid, false otherwise.
-func (c *Context) IsProgram(program *js.Object) bool {
-	return c.Call("isProgram", program).Bool()
+func (c *Context) IsProgram(program *js.Value) bool {
+	return c.Object.Call("isProgram", program).Bool()
 }
 
 // Returns true if buffer is valid, false otherwise.
-func (c *Context) IsRenderbuffer(renderbuffer *js.Object) bool {
-	return c.Call("isRenderbuffer", renderbuffer).Bool()
+func (c *Context) IsRenderbuffer(renderbuffer *js.Value) bool {
+	return c.Object.Call("isRenderbuffer", renderbuffer).Bool()
 }
 
 // Returns true if shader is valid, false otherwise.
-func (c *Context) IsShader(shader *js.Object) bool {
-	return c.Call("isShader", shader).Bool()
+func (c *Context) IsShader(shader *js.Value) bool {
+	return c.Object.Call("isShader", shader).Bool()
 }
 
 // Returns true if texture is valid, false otherwise.
-func (c *Context) IsTexture(texture *js.Object) bool {
-	return c.Call("isTexture", texture).Bool()
+func (c *Context) IsTexture(texture *js.Value) bool {
+	return c.Object.Call("isTexture", texture).Bool()
 }
 
 // Returns whether or not a WebGL capability is enabled for this context.
 func (c *Context) IsEnabled(capability int) bool {
-	return c.Call("isEnabled", capability).Bool()
+	return c.Object.Call("isEnabled", capability).Bool()
 }
 
 // Sets the width of lines in WebGL.
 func (c *Context) LineWidth(width float64) {
-	c.Call("lineWidth", width)
+	c.Object.Call("lineWidth", width)
 }
 
 // Links an attached vertex shader and an attached fragment shader
 // to a program so it can be used by the graphics processing unit (GPU).
-func (c *Context) LinkProgram(program *js.Object) {
-	c.Call("linkProgram", program)
+func (c *Context) LinkProgram(program *js.Value) {
+	c.Object.Call("linkProgram", program)
 }
 
 // Sets pixel storage modes for readPixels and unpacking of textures
 // with texImage2D and texSubImage2D.
 func (c *Context) PixelStorei(pname, param int) {
-	c.Call("pixelStorei", pname, param)
+	c.Object.Call("pixelStorei", pname, param)
 }
 
 // Sets the implementation-specific units and scale factor
 // used to calculate fragment depth values.
 func (c *Context) PolygonOffset(factor, units float64) {
-	c.Call("polygonOffset", factor, units)
+	c.Object.Call("polygonOffset", factor, units)
 }
 
 // TODO: Figure out if pixels should be a slice.
 // Reads pixel data into an ArrayBufferView object from a
 // rectangular area in the color buffer of the active frame buffer.
-func (c *Context) ReadPixels(x, y, width, height, format, typ int, pixels *js.Object) {
-	c.Call("readPixels", x, y, width, height, format, typ, pixels)
+func (c *Context) ReadPixels(x, y, width, height, format, typ int, pixels *js.Value) {
+	c.Object.Call("readPixels", x, y, width, height, format, typ, pixels)
 }
 
 // Creates or replaces the data store for the currently bound WebGLRenderbuffer object.
 func (c *Context) RenderbufferStorage(target, internalFormat, width, height int) {
-	c.Call("renderbufferStorage", target, internalFormat, width, height)
+	c.Object.Call("renderbufferStorage", target, internalFormat, width, height)
 }
 
 //func (c *Context) SampleCoverage(value float64, invert bool) {
-//	c.Call("sampleCoverage", value, invert)
+//	c.Object.Call("sampleCoverage", value, invert)
 //}
 
 // Sets the dimensions of the scissor box.
 func (c *Context) Scissor(x, y, width, height int) {
-	c.Call("scissor", x, y, width, height)
+	c.Object.Call("scissor", x, y, width, height)
 }
 
 // Sets and replaces shader source code in a shader object.
-func (c *Context) ShaderSource(shader *js.Object, source string) {
-	c.Call("shaderSource", shader, source)
+func (c *Context) ShaderSource(shader *js.Value, source string) {
+	c.Object.Call("shaderSource", shader, source)
 }
 
 // public function stencilFunc(func:GLenum, ref:GLint, mask:GLuint) : Void;
@@ -899,58 +913,58 @@ func (c *Context) ShaderSource(shader *js.Object, source string) {
 // public function stencilOpSeparate(face:GLenum, fail:GLenum, zfail:GLenum, zpass:GLenum) : Void;
 
 // Loads the supplied pixel data into a texture.
-func (c *Context) TexImage2D(target, level, internalFormat, format, kind int, image *js.Object) {
-	c.Call("texImage2D", target, level, internalFormat, format, kind, image)
+func (c *Context) TexImage2D(target, level, internalFormat, format, kind int, image *js.Value) {
+	c.Object.Call("texImage2D", target, level, internalFormat, format, kind, image)
 }
 
 // Sets texture parameters for the current texture unit.
 func (c *Context) TexParameteri(target int, pname int, param int) {
-	c.Call("texParameteri", target, pname, param)
+	c.Object.Call("texParameteri", target, pname, param)
 }
 
 // Replaces a portion of an existing 2D texture image with all of another image.
-func (c *Context) TexSubImage2D(target, level, xoffset, yoffset, format, typ int, image *js.Object) {
-	c.Call("texSubImage2D", target, level, xoffset, yoffset, format, typ, image)
+func (c *Context) TexSubImage2D(target, level, xoffset, yoffset, format, typ int, image *js.Value) {
+	c.Object.Call("texSubImage2D", target, level, xoffset, yoffset, format, typ, image)
 }
 
 // Assigns a floating point value to a uniform variable for the current program object.
-func (c *Context) Uniform1f(location *js.Object, x float32) {
-	c.Call("uniform1f", location, x)
+func (c *Context) Uniform1f(location *js.Value, x float32) {
+	c.Object.Call("uniform1f", location, x)
 }
 
 // Assigns a integer value to a uniform variable for the current program object.
-func (c *Context) Uniform1i(location *js.Object, x int) {
-	c.Call("uniform1i", location, x)
+func (c *Context) Uniform1i(location *js.Value, x int) {
+	c.Object.Call("uniform1i", location, x)
 }
 
 // Assigns 2 floating point values to a uniform variable for the current program object.
-func (c *Context) Uniform2f(location *js.Object, x, y float32) {
-	c.Call("uniform2f", location, x, y)
+func (c *Context) Uniform2f(location *js.Value, x, y float32) {
+	c.Object.Call("uniform2f", location, x, y)
 }
 
 // Assigns 2 integer values to a uniform variable for the current program object.
-func (c *Context) Uniform2i(location *js.Object, x, y int) {
-	c.Call("uniform2i", location, x, y)
+func (c *Context) Uniform2i(location *js.Value, x, y int) {
+	c.Object.Call("uniform2i", location, x, y)
 }
 
 // Assigns 3 floating point values to a uniform variable for the current program object.
-func (c *Context) Uniform3f(location *js.Object, x, y, z float32) {
-	c.Call("uniform3f", location, x, y, z)
+func (c *Context) Uniform3f(location *js.Value, x, y, z float32) {
+	c.Object.Call("uniform3f", location, x, y, z)
 }
 
 // Assigns 3 integer values to a uniform variable for the current program object.
-func (c *Context) Uniform3i(location *js.Object, x, y, z int) {
-	c.Call("uniform3i", location, x, y, z)
+func (c *Context) Uniform3i(location *js.Value, x, y, z int) {
+	c.Object.Call("uniform3i", location, x, y, z)
 }
 
 // Assigns 4 floating point values to a uniform variable for the current program object.
-func (c *Context) Uniform4f(location *js.Object, x, y, z, w float32) {
-	c.Call("uniform4f", location, x, y, z, w)
+func (c *Context) Uniform4f(location *js.Value, x, y, z, w float32) {
+	c.Object.Call("uniform4f", location, x, y, z, w)
 }
 
 // Assigns 4 integer values to a uniform variable for the current program object.
-func (c *Context) Uniform4i(location *js.Object, x, y, z, w int) {
-	c.Call("uniform4i", location, x, y, z, w)
+func (c *Context) Uniform4i(location *js.Value, x, y, z, w int) {
+	c.Object.Call("uniform4i", location, x, y, z, w)
 }
 
 // public function uniform1fv(location:WebGLUniformLocation, v:ArrayAccess<Float>) : Void;
@@ -964,34 +978,34 @@ func (c *Context) Uniform4i(location *js.Object, x, y, z, w int) {
 
 // Sets values for a 2x2 floating point vector matrix into a
 // uniform location as a matrix or a matrix array.
-func (c *Context) UniformMatrix2fv(location *js.Object, transpose bool, value []float32) {
-	c.Call("uniformMatrix2fv", location, transpose, value)
+func (c *Context) UniformMatrix2fv(location *js.Value, transpose bool, value []float32) {
+	c.Object.Call("uniformMatrix2fv", location, transpose, value)
 }
 
 // Sets values for a 3x3 floating point vector matrix into a
 // uniform location as a matrix or a matrix array.
-func (c *Context) UniformMatrix3fv(location *js.Object, transpose bool, value []float32) {
-	c.Call("uniformMatrix3fv", location, transpose, value)
+func (c *Context) UniformMatrix3fv(location *js.Value, transpose bool, value []float32) {
+	c.Object.Call("uniformMatrix3fv", location, transpose, value)
 }
 
 // Sets values for a 4x4 floating point vector matrix into a
 // uniform location as a matrix or a matrix array.
-func (c *Context) UniformMatrix4fv(location *js.Object, transpose bool, value []float32) {
-	c.Call("uniformMatrix4fv", location, transpose, value)
+func (c *Context) UniformMatrix4fv(location *js.Value, transpose bool, value []float32) {
+	c.Object.Call("uniformMatrix4fv", location, transpose, value)
 }
 
 // Set the program object to use for rendering.
-func (c *Context) UseProgram(program *js.Object) {
-	c.Call("useProgram", program)
+func (c *Context) UseProgram(program *js.Value) {
+	c.Object.Call("useProgram", program)
 }
 
 // Returns whether a given program can run in the current WebGL state.
-func (c *Context) ValidateProgram(program *js.Object) {
-	c.Call("validateProgram", program)
+func (c *Context) ValidateProgram(program *js.Value) {
+	c.Object.Call("validateProgram", program)
 }
 
 func (c *Context) VertexAttribPointer(index, size, typ int, normal bool, stride int, offset int) {
-	c.Call("vertexAttribPointer", index, size, typ, normal, stride, offset)
+	c.Object.Call("vertexAttribPointer", index, size, typ, normal, stride, offset)
 }
 
 // public function vertexAttrib1f(indx:GLuint, x:GLfloat) : Void;
@@ -1006,5 +1020,5 @@ func (c *Context) VertexAttribPointer(index, size, typ int, normal bool, stride 
 // Represents a rectangular viewable area that contains
 // the rendering results of the drawing buffer.
 func (c *Context) Viewport(x, y, width, height int) {
-	c.Call("viewport", x, y, width, height)
+	c.Object.Call("viewport", x, y, width, height)
 }
