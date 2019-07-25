@@ -40,7 +40,7 @@ func main() {
 		return
 	}
 
-    // Do something with the WebGL context
+	// Do something with the WebGL context
 	gl.ClearColor(0.8, 0.3, 0.01, 1)
 	gl.Clear(webgl.COLOR_BUFFER_BIT)
 }
