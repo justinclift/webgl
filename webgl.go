@@ -1,3 +1,5 @@
+// +build wasm
+
 // Copyright 2014 Joseph Hager. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -343,18 +345,17 @@ func NewContext(canvas *js.Value, ca *ContextAttributes) (*Context, error) {
 	if ca == nil {
 		ca = DefaultAttributes()
 	}
-
-	attrs := map[string]bool{
-		"alpha":                 ca.Alpha,
-		"depth":                 ca.Depth,
-		"stencil":               ca.Stencil,
-		"antialias":             ca.Antialias,
-		"premultipliedAlpha":    ca.PremultipliedAlpha,
-		"preserveDrawingBuffer": ca.PreserveDrawingBuffer,
-	}
-	gl := canvas.Call("getContext", "webgl", attrs)
+	attrStr := "{" +
+		"alpha: " + boolStr(ca.Alpha) +
+		", depth: " + boolStr(ca.Depth) +
+		", stencil: " + boolStr(ca.Stencil) +
+		", antialias: " + boolStr(ca.Antialias) +
+		", premultipliedAlpha: " + boolStr(ca.PremultipliedAlpha) +
+		", preserveDrawingBuffer: " + boolStr(ca.PreserveDrawingBuffer) +
+		"}"
+	gl := canvas.Call("getContext", "webgl", attrStr)
 	if gl == js.Undefined() {
-		gl = canvas.Call("getContext", "experimental-webgl", attrs)
+		gl = canvas.Call("getContext", "experimental-webgl", attrStr)
 		if gl == js.Undefined() {
 			return nil, errors.New("creating a webgl context has failed")
 		}
@@ -501,6 +502,12 @@ func (c *Context) CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, w, h 
 // Creates and initializes a WebGLBuffer.
 func (c *Context) CreateBuffer() *js.Value {
 	z := c.Object.Call("createBuffer")
+	return &z
+}
+
+// Creates and initializes a WebGL Array Buffer.
+func (c *Context) CreateArrayBuffer() *js.Value {
+	z := c.Object.Call("createBuffer", c.ARRAY_BUFFER)
 	return &z
 }
 
@@ -1021,4 +1028,12 @@ func (c *Context) VertexAttribPointer(index, size, typ int, normal bool, stride 
 // the rendering results of the drawing buffer.
 func (c *Context) Viewport(x, y, width, height int) {
 	c.Object.Call("viewport", x, y, width, height)
+}
+
+// Returns true or false value as a string
+func boolStr(b bool) string {
+	if b {
+		return "true"
+	}
+	return "false"
 }
