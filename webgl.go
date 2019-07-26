@@ -998,19 +998,19 @@ func (c *Context) Uniform4i(location *js.Value, x, y, z, w int) {
 // Sets values for a 2x2 floating point vector matrix into a
 // uniform location as a matrix or a matrix array.
 func (c *Context) UniformMatrix2fv(location *js.Value, transpose bool, value []float32) {
-	c.Object.Call("uniformMatrix2fv", location, transpose, value)
+	c.Object.Call("uniformMatrix2fv", location, transpose, js.TypedArrayOf(value))
 }
 
 // Sets values for a 3x3 floating point vector matrix into a
 // uniform location as a matrix or a matrix array.
 func (c *Context) UniformMatrix3fv(location *js.Value, transpose bool, value []float32) {
-	c.Object.Call("uniformMatrix3fv", location, transpose, value)
+	c.Object.Call("uniformMatrix3fv", location, transpose, js.TypedArrayOf(value))
 }
 
 // Sets values for a 4x4 floating point vector matrix into a
 // uniform location as a matrix or a matrix array.
 func (c *Context) UniformMatrix4fv(location *js.Value, transpose bool, value []float32) {
-	c.Object.Call("uniformMatrix4fv", location, transpose, value)
+	c.Object.Call("uniformMatrix4fv", location, transpose, js.TypedArrayOf(value))
 }
 
 // Set the program object to use for rendering.
