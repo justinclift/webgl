@@ -8,7 +8,6 @@ package webgl
 
 import (
 	"errors"
-	"reflect"
 	"runtime"
 	"syscall/js"
 	"unsafe"
@@ -1055,51 +1054,57 @@ func boolStr(b bool) string {
 	return "false"
 }
 
+type SliceHeader struct {
+	Data uintptr
+	Len  int
+	Cap  int
+}
+
 // Copied from https://github.com/golang/go/issues/32402#issuecomment-502470439
 func sliceToByteSlice(s interface{}) []byte {
 	switch s := s.(type) {
 	case []int8:
-		h := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+		h := (*SliceHeader)(unsafe.Pointer(&s))
 		return *(*[]byte)(unsafe.Pointer(h))
 	case []int16:
-		h := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+		h := (*SliceHeader)(unsafe.Pointer(&s))
 		h.Len *= 2
 		h.Cap *= 2
 		return *(*[]byte)(unsafe.Pointer(h))
 	case []int32:
-		h := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+		h := (*SliceHeader)(unsafe.Pointer(&s))
 		h.Len *= 4
 		h.Cap *= 4
 		return *(*[]byte)(unsafe.Pointer(h))
 	case []int64:
-		h := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+		h := (*SliceHeader)(unsafe.Pointer(&s))
 		h.Len *= 8
 		h.Cap *= 8
 		return *(*[]byte)(unsafe.Pointer(h))
 	case []uint8:
 		return s
 	case []uint16:
-		h := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+		h := (*SliceHeader)(unsafe.Pointer(&s))
 		h.Len *= 2
 		h.Cap *= 2
 		return *(*[]byte)(unsafe.Pointer(h))
 	case []uint32:
-		h := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+		h := (*SliceHeader)(unsafe.Pointer(&s))
 		h.Len *= 4
 		h.Cap *= 4
 		return *(*[]byte)(unsafe.Pointer(h))
 	case []uint64:
-		h := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+		h := (*SliceHeader)(unsafe.Pointer(&s))
 		h.Len *= 8
 		h.Cap *= 8
 		return *(*[]byte)(unsafe.Pointer(h))
 	case []float32:
-		h := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+		h := (*SliceHeader)(unsafe.Pointer(&s))
 		h.Len *= 4
 		h.Cap *= 4
 		return *(*[]byte)(unsafe.Pointer(h))
 	case []float64:
-		h := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+		h := (*SliceHeader)(unsafe.Pointer(&s))
 		h.Len *= 8
 		h.Cap *= 8
 		return *(*[]byte)(unsafe.Pointer(h))
