@@ -1,6 +1,8 @@
+// +build example
 // +build wasm
 
-// Copyright 2014 Joseph Hager and the TinyGo Authors. All rights reserved.
+// Copyright 2020 Erin Pentecost, Joseph Hager and the TinyGo Authors.
+// All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -370,9 +372,9 @@ func NewContext(canvas *js.Value, ca *ContextAttributes) (*Context, error) {
 		", preserveDrawingBuffer: " + boolStr(ca.PreserveDrawingBuffer) +
 		"}"
 	gl := canvas.Call("getContext", "webgl", attrStr)
-	if gl == js.Undefined() {
+	if gl.Equal(js.Undefined()) {
 		gl = canvas.Call("getContext", "experimental-webgl", attrStr)
-		if gl == js.Undefined() {
+		if gl.Equal(js.Undefined()) {
 			return nil, errors.New("creating a webgl context has failed")
 		}
 	}
