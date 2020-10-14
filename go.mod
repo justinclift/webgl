@@ -1,3 +1,3 @@
-module github.com/erinpentecost/webgl
+module github.com/justinclift/webgl
 
 go 1.14
