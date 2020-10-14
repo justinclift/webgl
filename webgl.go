@@ -1,4 +1,3 @@
-// +build example
 // +build wasm
 
 // Copyright 2020 Erin Pentecost, Joseph Hager and the TinyGo Authors.
