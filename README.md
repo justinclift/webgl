@@ -1,11 +1,13 @@
-# webgl
+# webgl + tinygo + wasm
 
 [![GoDoc](https://godoc.org/github.com/justinclift/webgl?status.svg)](https://godoc.org/github.com/justinclift/webgl)
 [![Go Report Card](https://goreportcard.com/badge/github.com/justinclift/webgl)](https://goreportcard.com/report/github.com/justinclift/webgl)
 
-[TinyGo](https://github.com/tinygo-org/tinygo) bindings for [WebGL 1.0](https://www.khronos.org/registry/webgl/specs/latest/1.0/) context.
+[WASM](https://webassembly.org/) target for [TinyGo](https://github.com/tinygo-org/tinygo) bindings for [WebGL 1.0](https://www.khronos.org/registry/webgl/specs/latest/1.0/) context.
 
 ## Example
+
+A full example can be found in in the `examples/` directory.
 
 ![Screenshot](https://cloud.githubusercontent.com/assets/1924134/3566022/5d81f2d0-0ae0-11e4-82e4-3cb33b83d8d3.png)
 
@@ -109,3 +111,8 @@ init();
 ```
 
 wasm_exec.js should be obtained from the TinyGo source repository.
+
+## Sources used
+
+* https://github.com/bobcob7/wasm-basic-triangle
+* https://github.com/justinclift/tinygo-wasm-basic-triangle
